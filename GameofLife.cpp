@@ -123,6 +123,9 @@ void GameofLife::runSim()
       }
       else // pause between generations
       {
+        for (int i = 0; i < 10000000; ++i)
+        {
+        }
       }
       nextGen();
       checkGen();
@@ -195,7 +198,7 @@ void GameofLife::checkGen()
     }
   }
   ++numSame;
-  if (numSame == 5)
+  if (numSame == 5 || numGens == 5000) // Generation has stabilized or is in an infinite loop
   {
     isStable = true;
   }

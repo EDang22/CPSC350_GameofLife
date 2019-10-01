@@ -210,7 +210,15 @@ void GameDriver::createGrid()
     }
     else if (nextCell = 2)
     {
-      grid = grid + "-";
+      if (((row * col) - grid.length()) <= numAlive)
+      {
+        grid = grid + "X";
+        --numAlive;
+      }
+      else
+      {
+        grid = grid + "-";
+      }
     }
   }
 }
