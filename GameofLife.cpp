@@ -1,3 +1,12 @@
+/*
+* Ethan Dang
+* 2326380
+* edang@chapman.edu
+* CPSC 350-02
+* Assignment 2
+* GameofLife class: Runs simulation, generates future generation
+* and compares, then switches generations. Ends game if grid is stable or dead
+*/
 #include <iostream>
 #include <fstream>
 #include <limits>
@@ -5,6 +14,7 @@
 
 using namespace std;
 
+// default constructor
 GameofLife::GameofLife()
 {
   curGrid = new char*[10];
@@ -30,6 +40,7 @@ GameofLife::GameofLife()
   }
 }
 
+// overloaded constructor
 GameofLife::GameofLife(int row, int col, string grid, char mode, string output, bool oF)
 {
   curGrid = new char*[row];
@@ -39,10 +50,10 @@ GameofLife::GameofLife(int row, int col, string grid, char mode, string output, 
   numGens = 0;
   isDead = false;
   isStable = false;
-  m = tolower(mode, locale());
+  m = tolower(mode);
   o = output;
   outputFile = oF;
-  for (int i = 0; i < numRow; ++i)
+  for (int i = 0; i < numRow; ++i) // initializes grid
   {
     curGrid[i] = new char[numCol];
     nextGrid[i] = new char[numCol];
@@ -52,22 +63,23 @@ GameofLife::GameofLife(int row, int col, string grid, char mode, string output, 
       nextGrid[i][j] = '-';
     }
   }
-  if(addGrid(grid))
+  if(addGrid(grid)) // adds string grid to 2D array
   {
-    runSim();
+    runSim(); // runs simulation
   }
 }
 
+// Takes given string grid and adds to 2D array
 bool GameofLife::addGrid(string grid)
 {
-  if (grid.length() == (numRow * numCol))
+  if (grid.length() == (numRow * numCol)) // ensures given grid is proper format
   {
     int gridI = 0;
     for (int i = 0; i < numRow; ++i)
     {
       for (int j = 0; j < numCol; ++j)
       {
-        if (tolower(grid[gridI]) == 'x' || tolower(grid[gridI]) == '-')
+        if (tolower(grid[gridI]) == 'x' || tolower(grid[gridI]) == '-') // ensures given grid is proper format
         {
           curGrid[i][j] = grid[gridI];
           ++gridI;
@@ -88,11 +100,12 @@ bool GameofLife::addGrid(string grid)
   return true;
 }
 
+// Runs simulation, check method of output and prints to console or file
 void GameofLife::runSim()
 {
-  if (!outputFile)
+  if (!outputFile) // method of output is to console
   {
-    while (!isDead && !isStable)
+    while (!isDead && !isStable) // while grid is not dead or stable
     {
       cout << numGens << endl;
       for(int i = 0; i < numRow; ++i)
@@ -103,12 +116,12 @@ void GameofLife::runSim()
         }
         cout << endl;
       }
-      if (tolower(o[0]) == 'e')
+      if (tolower(o[0]) == 'e') // must press enter before next generation
       {
         cout << endl << "Press enter to print next generation" << endl;
         cin.ignore(std::numeric_limits<streamsize>::max(), '\n');
       }
-      else
+      else // pause between generations
       {
       }
       nextGen();
@@ -122,7 +135,7 @@ void GameofLife::runSim()
   {
     while (!isDead && !isStable)
     {
-      printFile();
+      printFile(); // prints to file
       nextGen();
       checkGen();
       switchGen();
@@ -130,10 +143,11 @@ void GameofLife::runSim()
       ++numGens;
     }
   }
-  endGame();
+  endGame(); // ends simulation
   return;
 }
 
+// Generates grid for next generation, check if cell is in corner, border or middle
 void GameofLife::nextGen()
 {
   for (int i = 0; i < numRow; ++i)
@@ -146,26 +160,27 @@ void GameofLife::nextGen()
         {
           if (j == 0 || j == numCol - 1)
           {
-            checkNC(i, j);
+            checkNC(i, j); // corner cell
           }
           else
           {
-            checkNB(i, j);
+            checkNB(i, j); // border cell
           }
         }
         else
         {
-          checkNB(i, j);
+          checkNB(i, j); // border cell
         }
       }
       else
       {
-        checkNM(i, j);
+        checkNM(i, j); // middle cell
       }
     }
   }
 }
 
+// Checks if next generation is identical to previous, if stable for 5 generations, game ends
 void GameofLife::checkGen()
 {
   for (int i = 0; i < numRow; ++i)
@@ -186,10 +201,11 @@ void GameofLife::checkGen()
   }
 }
 
+// Switches next generation to current generation
 void GameofLife::switchGen()
 {
   curGrid = nextGrid;
-  nextGrid = new char*[numRow];
+  nextGrid = new char*[numRow]; // sets next generation to new array
   for (int i = 0; i < numRow; ++i)
   {
     nextGrid[i] = new char[numCol];
@@ -200,6 +216,7 @@ void GameofLife::switchGen()
   }
 }
 
+// Checks if grid is dead
 void GameofLife::checkDead()
 {
   for (int i = 0; i < numRow; ++i)
@@ -216,6 +233,7 @@ void GameofLife::checkDead()
   return;
 }
 
+// Ends game, prints final generation
 void GameofLife::endGame()
 {
   if (!outputFile) //prints last generation, where it is stable or dead
@@ -231,7 +249,7 @@ void GameofLife::endGame()
     }
     cout << endl;
   }
-  else
+  else // if output is to file
   {
     printFile();
   }
@@ -239,6 +257,7 @@ void GameofLife::endGame()
   return;
 }
 
+// Prints to file (path is assigned to string o)
 void GameofLife::printFile()
 {
   ofstream file;
@@ -262,8 +281,11 @@ void GameofLife::printFile()
   }
 }
 
+// Checks neighbors of middle cells
+// Neighbors of middle cells are constant through any game mode
 void GameofLife::checkNM(int row, int col)
 {
+  // number of neighbors that are occupied
   int numNeigh = 0;
   if (curGrid[row - 1][col - 1] == 'X')
   {
@@ -297,6 +319,7 @@ void GameofLife::checkNM(int row, int col)
   {
     ++numNeigh;
   }
+  // checks numNeigh and changes location cell based on numNeigh
   if (numNeigh == 2)
   {
     nextGrid[row][col] = curGrid[row][col];
@@ -311,8 +334,11 @@ void GameofLife::checkNM(int row, int col)
   }
 }
 
+// Checks neighbors of corner cells based on game mode
+// Corner cell has 3 constant neighbors through all game modes
 void GameofLife::checkNC(int row, int col)
 {
+  // number of neighbors that are occupied
   int numNeigh = 0;
 
   // checks own corner in case of mirror mode as corner acts as 3 neighbors
@@ -331,7 +357,7 @@ void GameofLife::checkNC(int row, int col)
     {
       if (curGrid[row][col + 1] == 'X')
       {
-        if (m == 'm')
+        if (m == 'm') // if mirror mode, this neighbor counts as 2
         {
           numNeigh += 2;
         }
@@ -342,7 +368,7 @@ void GameofLife::checkNC(int row, int col)
       }
       if (curGrid[row + 1][col] == 'X')
       {
-        if (m == 'm')
+        if (m == 'm') // if mirror mode, this neighbor counts as 2
         {
           numNeigh += 2;
         }
@@ -388,7 +414,7 @@ void GameofLife::checkNC(int row, int col)
     {
       if (curGrid[row][col - 1] == 'X')
       {
-        if (m == 'm')
+        if (m == 'm') // if mirror mode, this neighbor counts as 2
         {
           numNeigh += 2;
         }
@@ -399,7 +425,7 @@ void GameofLife::checkNC(int row, int col)
       }
       if (curGrid[row + 1][col] == 'X')
       {
-        if (m == 'm')
+        if (m == 'm') // if mirror mode, this neighbor counts as 2
         {
           numNeigh += 2;
         }
@@ -448,7 +474,7 @@ void GameofLife::checkNC(int row, int col)
     {
       if (curGrid[row][col + 1] == 'X')
       {
-        if (m == 'm')
+        if (m == 'm') // if mirror mode, this neighbor counts as 2
         {
           numNeigh += 2;
         }
@@ -459,7 +485,7 @@ void GameofLife::checkNC(int row, int col)
       }
       if (curGrid[row - 1][col] == 'X')
       {
-        if (m == 'm')
+        if (m == 'm') // if mirror mode, this neighbor counts as 2
         {
           numNeigh += 2;
         }
@@ -505,7 +531,7 @@ void GameofLife::checkNC(int row, int col)
     {
       if (curGrid[row][col - 1] == 'X')
       {
-        if (m == 'm')
+        if (m == 'm') // if mirror mode, this neighbor counts as 2
         {
           numNeigh += 2;
         }
@@ -516,7 +542,7 @@ void GameofLife::checkNC(int row, int col)
       }
       if (curGrid[row - 1][col] == 'X')
       {
-        if (m == 'm')
+        if (m == 'm') // if mirror mode, this neighbor counts as 2
         {
           numNeigh += 2;
         }
@@ -573,6 +599,8 @@ void GameofLife::checkNC(int row, int col)
   }
 }
 
+// Checks neighbors of border cells based on game mode
+// Border cell has 5 constant neighbors through all game modes
 void GameofLife::checkNB(int row, int col)
 {
   int numNeigh = 0;
@@ -591,7 +619,7 @@ void GameofLife::checkNB(int row, int col)
   {
     if (curGrid[row][col - 1] == 'X')
     {
-      if (m == 'm')
+      if (m == 'm') // if mirror mode, this counts as two neighbors
       {
         numNeigh += 2;
       }
@@ -602,7 +630,7 @@ void GameofLife::checkNB(int row, int col)
     }
     if (curGrid[row][col + 1] == 'X')
     {
-      if (m == 'm')
+      if (m == 'm') // if mirror mode, this counts as two neighbors
       {
         numNeigh += 2;
       }
@@ -648,7 +676,7 @@ void GameofLife::checkNB(int row, int col)
   {
     if (curGrid[row][col - 1] == 'X')
     {
-      if (m == 'm')
+      if (m == 'm') // if mirror mode, this counts as two neighbors
       {
         numNeigh += 2;
       }
@@ -659,7 +687,7 @@ void GameofLife::checkNB(int row, int col)
     }
     if (curGrid[row][col + 1] == 'X')
     {
-      if (m == 'm')
+      if (m == 'm') // if mirror mode, this counts as two neighbors
       {
         numNeigh += 2;
       }
@@ -705,7 +733,7 @@ void GameofLife::checkNB(int row, int col)
   {
     if (curGrid[row + 1][col] == 'X')
     {
-      if (m == 'm')
+      if (m == 'm') // if mirror mode, this counts as two neighbors
       {
         numNeigh += 2;
       }
@@ -716,7 +744,7 @@ void GameofLife::checkNB(int row, int col)
     }
     if (curGrid[row - 1][col] == 'X')
     {
-      if (m == 'm')
+      if (m == 'm') // if mirror mode, this counts as two neighbors
       {
         numNeigh += 2;
       }
@@ -762,7 +790,7 @@ void GameofLife::checkNB(int row, int col)
   {
     if (curGrid[row + 1][col] == 'X')
     {
-      if (m == 'm')
+      if (m == 'm') // if mirror mode, this counts as two neighbors
       {
         numNeigh += 2;
       }
@@ -773,7 +801,7 @@ void GameofLife::checkNB(int row, int col)
     }
     if (curGrid[row - 1][col] == 'X')
     {
-      if (m == 'm')
+      if (m == 'm') // if mirror mode, this counts as two neighbors
       {
         numNeigh += 2;
       }
